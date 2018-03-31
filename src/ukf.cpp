@@ -1,5 +1,6 @@
 #include "ukf.h"
 #include "Eigen/Dense"
+#include "Eigen"
 #include <iostream>
 
 using namespace std;
@@ -27,10 +28,10 @@ UKF::UKF() {
 	float ra = 7;
 
 	// Process noise standard deviation longitudinal acceleration in m/s^2
-	std_a_ = 0.05*2;
+	std_a_ = 0.05*5;
 
 	// Process noise standard deviation yaw acceleration in rad/s^2
-	std_yawdd_ = 0.01*2;
+	std_yawdd_ = 0.01*8;
 
 	//DO NOT MODIFY measurement noise values below these are provided by the sensor manufacturer.
 	// Laser measurement noise standard deviation position1 in m
@@ -72,7 +73,7 @@ UKF::UKF() {
 	{
 		weights_(i) = 0.5/(lambda_ + n_aug_);
 	}
-	P_ = MatrixXd::Identity(5, 5)*0.0004;
+	P_ = MatrixXd::Identity(5, 5)*0.004;
 	x_<<0.0,0.0,0.0,0.0,0.0;
 }
 
@@ -91,7 +92,25 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 	 */
 	if (!is_initialized_)
 	{
+	    cout<<"UKF:\n";
 		time_us_ = meas_package.timestamp_;
+				if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
+			/**
+      Convert radar from polar to cartesian coordinates and initialize state.
+			 */
+			float rho = meas_package.raw_measurements_(0);
+			float theta = meas_package.raw_measurements_(1);
+			float r_dot = meas_package.raw_measurements_(2);
+			x_ << rho*cos(theta), rho*sin(theta),
+					r_dot*cos(theta), r_dot*sin(theta),0;
+		}
+		else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
+			/**
+      Initialize state.
+			 */
+			x_ <<meas_package.raw_measurements_(0),
+					meas_package.raw_measurements_(1), 0, 0,0;
+		}
 		is_initialized_ = true;
 		return;
 	}
