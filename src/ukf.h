@@ -10,6 +10,8 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+#define PI 3.1415925
+
 class UKF {
 public:
 
