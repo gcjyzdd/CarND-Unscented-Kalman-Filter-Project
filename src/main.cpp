@@ -5,6 +5,8 @@
 #include "ukf.h"
 #include "tools.h"
 
+#include <cstdlib>
+
 using namespace std;
 
 // for convenience
@@ -26,13 +28,30 @@ std::string hasData(std::string s) {
   return "";
 }
 
-int main()
+int main(int argc, char** argv)
 {
   uWS::Hub h;
 
   // Create a Kalman Filter instance
   UKF ukf;
 
+  if (argc>1)
+  {
+	float std_a_;
+	float std_yawdd_;
+	float p_init_;
+	std_a_ = atof(argv[1]);
+	std_yawdd_ = atof(argv[2]);
+	p_init_ = atof(argv[3]);
+
+	ukf.std_a_ = std_a_;
+	ukf.std_yawdd_ = std_yawdd_;
+	ukf.P_ = MatrixXd::Identity(5,5) * 0.04;
+	ukf.P_(2,2) = p_init_;
+	cout<<"std_a_="<< std_a_ <<" std_yawdd_="<<std_yawdd_
+			<<" p_init_="<<p_init_<<endl;
+  }
+  
   // used to compute the RMSE later
   Tools tools;
   vector<VectorXd> estimations;
